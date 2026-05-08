@@ -1,4 +1,5 @@
 // Dup2: counts occurences of lines
+// go run main.go file1.txt file2.txt
 package main
 
 import (
@@ -24,7 +25,12 @@ func main() {
 			f.Close()
 		}
 	}
-
+	// print dict result
+	for line, n := range counts {
+		if n > 1 {
+			fmt.Printf("%d\t%s\n", n, line)
+		}
+	}
 }
 
 func countLines(f *os.File, counts map[string]int) {
