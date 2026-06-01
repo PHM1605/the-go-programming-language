@@ -1,4 +1,5 @@
-// go run surface.go > surface.svg
+// Improve: provide COLOR CODE for Z-value
+// go run exercise3_3.go > surface.svg
 package main
 
 import (
@@ -17,7 +18,8 @@ const (
 
 var sin30, cos30 = math.Sin(angle), math.Cos(angle)
 
-func corner(i, j int) (float64, float64) {
+// NEW: add HEIGHT as well for color code
+func corner(i, j int) (float64, float64, float64) {
 	x := xyrange * (float64(i)/cells - 0.5) // -0.5->0.5 of xyrange i.e. -15->15
 	y := xyrange * (float64(j)/cells - 0.5)
 	z := f(x, y)
@@ -25,7 +27,7 @@ func corner(i, j int) (float64, float64) {
 	// from 3D (x,y,z) to 2D (sx, sy)
 	sx := width/2 + (x-y)*cos30*xyscale
 	sy := height/2 + (x+y)*sin30*xyscale - z*zscale
-	return sx, sy
+	return sx, sy, z
 }
 
 func f(x, y float64) float64 {
@@ -33,15 +35,33 @@ func f(x, y float64) float64 {
 	return math.Sin(r) / r // sin(distance) / distance
 }
 
+// NEW: color mapping function
+func color(z float64) string {
+	// z ranges [-1,1] => normalize to [0,1]
+	norm := (z + 1) / 2
+	if norm < 0 {
+		norm = 0
+	}
+	if norm > 1 {
+		norm = 1
+	}
+	r := int(255 * norm)
+	b := int(255 * (1 - norm))
+	// RGB
+	return fmt.Sprintf("#%02x00%02x", r, b)
+}
+
 func main() {
 	fmt.Printf("<svg xmlns='http://www.w3.org/2000/svg' style='stroke: grey; fill: white; stroke-width: 0.7' width='%d' height='%d'>", width, height)
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			ax, ay := corner(i+1, j)
-			bx, by := corner(i, j)
-			cx, cy := corner(i, j+1)
-			dx, dy := corner(i+1, j+1)
-			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g'/>\n", ax, ay, bx, by, cx, cy, dx, dy)
+			ax, ay, az := corner(i+1, j)
+			bx, by, bz := corner(i, j)
+			cx, cy, cz := corner(i, j+1)
+			dx, dy, dz := corner(i+1, j+1)
+			// average value of z of 4 corners
+			zavg := (az + bz + cz + dz) / 4
+			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' style='fill:%s'/>\n", ax, ay, bx, by, cx, cy, dx, dy, color(zavg))
 		}
 	}
 	fmt.Println("</svg>")

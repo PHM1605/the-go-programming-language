@@ -1,4 +1,5 @@
-// go run surface.go > surface.svg
+// NEW: check if points are VALID before drawing
+// go run exercise3_1.go > surface.svg
 package main
 
 import (
@@ -33,6 +34,11 @@ func f(x, y float64) float64 {
 	return math.Sin(r) / r // sin(distance) / distance
 }
 
+// NEW
+func invalid(x, y float64) bool {
+	return math.IsNaN(x) || math.IsNaN(y) || math.IsInf(x, 0) || math.IsInf(y, 0) // IsInf(x, 0) means "infinity in BOTH sides" (+1: positive inf, -1: negative inf)
+}
+
 func main() {
 	fmt.Printf("<svg xmlns='http://www.w3.org/2000/svg' style='stroke: grey; fill: white; stroke-width: 0.7' width='%d' height='%d'>", width, height)
 	for i := 0; i < cells; i++ {
@@ -41,6 +47,11 @@ func main() {
 			bx, by := corner(i, j)
 			cx, cy := corner(i, j+1)
 			dx, dy := corner(i+1, j+1)
+			// NEW: check before print
+			if invalid(ax, ay) || invalid(bx, by) || invalid(cx, cy) || invalid(dx, dy) {
+				continue
+			}
+
 			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g'/>\n", ax, ay, bx, by, cx, cy, dx, dy)
 		}
 	}
