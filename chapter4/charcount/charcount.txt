@@ -1,0 +1,4 @@
+Test Unicode char count
+Try to add some wierd chars in, like below 
+° 27 B 15 F 14 é 13A 10 世 界 
+界 ok is that good? 世

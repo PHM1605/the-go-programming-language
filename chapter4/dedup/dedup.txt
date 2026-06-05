@@ -1,0 +1,4 @@
+this is a test file.
+to see if it removes dups.
+to see if it removes dups.
+start normal printing.
