@@ -1,0 +1,14 @@
+<!-- . is []string; which is slice of milestones' titles -->
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1>Milestones</h1>
+        <ul>
+        {{range .}}
+            <li><a href="/milestone/{{.}}">{{.}}</a></li>
+        {{end}}
+        </ul>
+        
+        <p><a href="/">Back</a></p>
+    </body>
+</html>

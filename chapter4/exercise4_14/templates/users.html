@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<!-- . is "string[]" -->
+ <!-- . inside is "string" -->
+<html>
+    <body>
+        <h1>Users</h1>
+        <ul>
+            {{range .}}
+            <li><a href="/user/{{.}}">{{.}}</a></li>
+            {{end}}
+        </ul>
+        <p><a href="/">Back</a></p>
+    </body>
+</html>

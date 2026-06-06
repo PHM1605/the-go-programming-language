@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1>Milestone: {{.Title}}</h1>
+        <ul>
+        {{range .Issues}}
+            <li>
+                <a href="{{.HTMLURL}}">
+                    #{{.Number}} {{.Title}}
+                </a>
+            </li>
+        {{end}}
+        </ul>
+        
+        <p><a href="/">Back</a></p>
+    </body>
+</html>
