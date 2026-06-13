@@ -1,0 +1,23 @@
+package main
+
+import (
+	"fmt"
+	"net/url"
+)
+
+func main() {
+	// {lang: {en}, item: {1,2}}
+	m := url.Values{"lang": {"en"}}
+	m.Add("item", "1")
+	m.Add("item", "2")
+
+	fmt.Println(m.Get("lang")) // "en"
+	fmt.Println(m.Get("q"))    // "" (nothing)
+	fmt.Println(m.Get("item")) // 1st item only => "1"
+	fmt.Println(m["item"])     // [1,2]
+
+	// Reset map
+	m = nil
+	fmt.Println(m.Get("item")) // "" (nothing)
+	// m.Add("item", "3") // panic
+}
