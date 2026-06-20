@@ -1,0 +1,10 @@
+<root>
+  <div id="page" class="wide">
+    <div id="content">
+      <h2>Hello XML</h2>
+    </div>
+    <div>
+      <h2>Another title</h2>
+    </div>
+  </div>
+</root>

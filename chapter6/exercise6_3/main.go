@@ -144,21 +144,21 @@ func main() {
 	var a, b IntSet
 	a.AddAll(1, 2, 3, 4)
 	b.AddAll(3, 4, 5, 6)
-	fmt.Println("a = ", a.String())
-	fmt.Println("b = ", b.String())
+	fmt.Println("a = ", &a) // because only *IntSet implements String() function
+	fmt.Println("b = ", &b)
 
 	// Test intersection
 	c := a.Copy()
 	c.IntersectWith(&b)
-	fmt.Println("Intersection result: ", c.String())
+	fmt.Println("Intersection result: ", c)
 
 	// Test a DIFFERENCE WITH b (in <a> but not in <b>)
 	d := a.Copy()
 	d.DifferenceWith(&b)
-	fmt.Println("a DIFFERENCE WITH b result: ", d.String())
+	fmt.Println("a DIFFERENCE WITH b result: ", d)
 
 	// Test XOR
 	e := a.Copy()
 	e.SymmetricDifference(&b)
-	fmt.Println("a XOR b result: ", e.String())
+	fmt.Println("a XOR b result: ", e)
 }
