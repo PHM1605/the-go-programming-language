@@ -2,3 +2,5 @@
 .env
 comics.json
 *.jpg
+images/
+mirror/

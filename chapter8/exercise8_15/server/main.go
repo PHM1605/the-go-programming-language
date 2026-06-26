@@ -1,0 +1,137 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"log"
+	"net"
+	"time"
+)
+
+// for each client: store its "channel" and "name" of that client
+type client struct {
+	ch   chan string
+	name string
+}
+
+var (
+	entering = make(chan client) // NEW: channel to send/receive outgoing clients
+	leaving  = make(chan client) // NEW: channel to send/receive outgoing clients
+	messages = make(chan string) // all incoming clients' messages
+)
+
+func broadcaster() {
+	// set of clients
+	clients := make(map[client]bool)
+	for {
+		select {
+		case msg := <-messages:
+			// broadcasting incoming messages to all receiving-strings channels
+			// NEW: non-blocking sending with "select"
+			for cli := range clients {
+				select {
+				case cli.ch <- msg:
+					// normal broadcast to BUFFERED channel
+				default:
+					// if buffered channel is full and above case stuck => jumps here and skip "msg"
+				}
+			}
+		// which Client is entering => add to the set "clients"
+		case cli := <-entering:
+			clients[cli] = true
+			// names of current Clients
+			var names []string
+			for c := range clients {
+				names = append(names, c.name)
+			}
+			// print current Clients
+			cli.ch <- "Current users:"
+			for _, name := range names {
+				cli.ch <- " - " + name
+			}
+		// which channel is leaving => remove from the set "clients" & close that channel
+		case cli := <-leaving:
+			delete(clients, cli)
+			close(cli.ch)
+		}
+	}
+}
+
+func clientWriter(conn net.Conn, ch <-chan string) {
+	// hanging; to push strings that enter (cli := <-msg) from other users to this connection
+	for msg := range ch {
+		fmt.Fprintln(conn, msg)
+	}
+}
+
+func handleConn(conn net.Conn) {
+	// NEW: scan Username being sent first
+	scanner := bufio.NewScanner(conn)
+	if !scanner.Scan() {
+		conn.Close()
+		return
+	}
+
+	// identity being sent via 1st scan
+	who := scanner.Text()
+
+	// channel to push messages to this client (owner of "conn")
+	// NEW: we use buffered channel here;
+	ch := make(chan string, 8)
+	// store client info
+	cli := client{
+		ch:   ch,
+		name: who,
+	}
+
+	// properly clean up
+	defer func() {
+		leaving <- cli                // remove from broadcaster's clients pool //
+		messages <- who + " has left" // send to messages pool to be sent to all other Clients
+		conn.Close()
+	}()
+
+	go clientWriter(conn, ch) // hanging inside to keep channel alive to send strings to Client
+
+	ch <- "You are " + who           // send to Client "You are xyz"
+	messages <- who + " has arrived" // send to messages pool "xyz has arrived" (to be sent to other Clients; but not yet this Client, not yet in pool)
+	entering <- cli                  // to update broadcaster's clients pool
+
+	// timer for 10 minutes
+	timer := time.NewTimer(10 * time.Minute)
+	go func() {
+		<-timer.C // hanging; this channel will send signal after 10s to stop hanging
+		conn.Close()
+	}()
+
+	// scanning what this client is sending
+	for scanner.Scan() { // hanging
+		// reset timer when user types something and reach here
+		timer.Reset(10 * time.Minute)
+
+		messages <- who + ": " + scanner.Text() // send to messages pool to be sent to all other Clients
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err) // we should not print; for no "ugly" complaining text on screen
+		return
+	}
+}
+
+func main() {
+	listener, err := net.Listen("tcp", "localhost:8000")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// NEW: like a channels manager
+	go broadcaster()
+
+	for {
+		conn, err := listener.Accept() // hanging
+		if err != nil {
+			log.Print(err)
+			continue
+		}
+		go handleConn(conn) // per-client goroutine
+	}
+}
