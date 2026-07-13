@@ -4,3 +4,5 @@ comics.json
 *.jpg
 images/
 mirror/
+*.gif
+*.png
