@@ -24,7 +24,7 @@ func (s *IntSet) Has(x int) bool {
 func (s *IntSet) Add(x int) {
 	word, bit := x/64, uint(x%64)
 	// if we insert number e.g. 67 => word = 1, bit = 3
-	// => we insert to SET 2 rows wit values 0 all
+	// => we insert to SET 2 rows with values 0 all
 	for word >= len(s.words) {
 		s.words = append(s.words, 0)
 	}

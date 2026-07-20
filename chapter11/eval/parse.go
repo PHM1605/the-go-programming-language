@@ -8,39 +8,15 @@ import (
 )
 
 type parser struct {
-	// scan.Scan() => fetch type of next token e.g. scanner.Ident or '('
-	// scan.TokenText() => get that token out
+	// scan.Scan() => return type of the next token e.g. scanner.Ident or '(' or scanner.Int etc.
+	// scan.TokenText() => show the string represents that token
 	scan scanner.Scanner
 	tok  rune
 }
 
-// every time we call "p.next()" we scan 1 more token from string
+// every time we call p.next() we scan 1 more token from string
 func (p *parser) next() {
-	p.tok = p.scan.Scan() // p.tok = "pow" (type scanner.Ident)
-}
-
-// input: pow(x,3)+pow(y,3)
-func Parse(input string) (_ Expr, err error) {
-	// to make <panic> not crash
-	defer func() {
-		if x := recover(); x != nil {
-			err = fmt.Errorf("%v", x)
-		}
-	}()
-
-	p := &parser{}
-	p.scan.Init(strings.NewReader(input))
-	p.scan.Mode = scanner.ScanIdents | scanner.ScanInts | scanner.ScanFloats
-
-	p.next() // now "tok"="pow"
-
-	expr := p.parseExpr()
-
-	// if not reach the end
-	if p.tok != scanner.EOF {
-		return nil, fmt.Errorf("unexpected %q", p.scan.TokenText())
-	}
-	return expr, nil
+	p.tok = p.scan.Scan() // p.tok = scanner.Ident
 }
 
 func (p *parser) parseExpr() Expr {
@@ -51,7 +27,7 @@ func (p *parser) parseAddSub() Expr {
 	left := p.parseMulDiv()
 	for p.tok == '+' || p.tok == '-' {
 		op := p.tok
-		p.next() // p.tok = "pow"
+		p.next() // p.tok='pow' (right side)
 		right := p.parseMulDiv()
 		left = binary{
 			op: op,
@@ -95,31 +71,31 @@ func (p *parser) parsePrimary() Expr {
 		v, _ := strconv.ParseFloat(p.scan.TokenText(), 64)
 		p.next()
 		return literal(v)
-
-	// "pow", "sin" etc. is of type "scanner.Ident"
+	// "pow", "sin", "x" etc.
 	case scanner.Ident:
 		name := p.scan.TokenText() // "pow"
-		p.next()                   // fetch "("
-		if p.tok != '(' {
-			return Var(name) // "x"
+		p.next()                   // p.tok='('
+		if p.tok != '(' {          // "x"
+			return Var(name)
 		}
-		p.next() // fetch "x" => p.tok = "x"
+		p.next() // fetch "x"
 		var args []Expr
 		if p.tok != ')' {
 			for {
-				args = append(args, p.parseExpr()) // args = [Var("x")], [Var("x"),Literal("3")] etc.
-				if p.tok != ',' {                  // "," then ")"
+				args = append(args, p.parseExpr()) // [Var(x)]; [Var(x), Literal(3)]
+				if p.tok != ',' {                  // ')'
 					break
 				}
-				p.next() // p.tok = "3"
+				// if p.tok=',' then here we get '3'
+				p.next()
 			}
 		}
 		if p.tok != ')' {
 			panic("missing")
 		}
-		p.next() // p.tok = "+"
+		p.next() // p.tok = '+'
 
-		return call{fn: name, args: args} // left side
+		return call{fn: name, args: args} // left side; return pow(x,3)
 
 	case '(':
 		p.next()
@@ -131,5 +107,29 @@ func (p *parser) parsePrimary() Expr {
 		return e
 	}
 
-	panic(fmt.Sprintf("unexpected token %q", p.scan.TokenText()))
+	panic(fmt.Sprintf("unexpected '%s'", p.scan.TokenText()))
+}
+
+// e.g. input: pow(x,3)+pow(y,3) => return "binary Expr"
+func Parse(input string) (_ Expr, err error) {
+	// to make "panic" not crash
+	defer func() {
+		if x := recover(); x != nil {
+			err = fmt.Errorf("%v", x)
+		}
+	}()
+
+	p := &parser{}
+	p.scan.Init(strings.NewReader(input))
+	p.scan.Mode = scanner.ScanIdents | scanner.ScanInts | scanner.ScanFloats
+
+	p.next() // now "tok" = "pow"
+
+	expr := p.parseExpr()
+
+	// if not reach the end
+	if p.tok != scanner.EOF {
+		return nil, fmt.Errorf("unexpected '%s'", p.scan.TokenText())
+	}
+	return expr, nil
 }

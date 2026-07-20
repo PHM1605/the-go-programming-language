@@ -1,0 +1,33 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"io"
+	"os"
+	"strings"
+)
+
+// flag on command line when using echo
+var (
+	n = flag.Bool("n", false, "omit trailing newline")
+	s = flag.String("s", " ", "separator")
+)
+var out io.Writer = os.Stdout // modified during testing
+
+func echo(newline bool, sep string, args []string) error {
+	fmt.Fprint(out, strings.Join(args, sep))
+	if newline {
+		fmt.Fprintln(out)
+	}
+	return nil
+}
+
+func main() {
+	flag.Parse()
+	// "-n" means "omit newline" == "no newline"
+	if err := echo(!*n, *s, flag.Args()); err != nil {
+		fmt.Fprintf(os.Stderr, "echo: %v\n", err)
+		os.Exit(1)
+	}
+}

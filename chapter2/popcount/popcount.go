@@ -9,7 +9,8 @@ var pc [256]byte
 
 // numbers from 0->255 (1 byte) has how many 1s each
 func init() {
-	for i := range pc {
+	// i/2 is i shifting right 1
+	for i := range pc { // i = 0,1,..,255
 		pc[i] = pc[i/2] + byte(i&1)
 	}
 }
