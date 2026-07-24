@@ -1,0 +1,35 @@
+((Title "Dr. Strangelove")
+ (Subtitle "How I Learned to Stop Worrying and Love the Bomb")
+ (Year 1964)
+ (Color nil)
+ (Actor
+  (("Dr. Strangelove" "Peter Sellers")
+   ("Gen. Buck Turgidson" "George C. Scott")))
+ (Oscars
+  ("Best Picture (Nomin.)"
+   "Best Director (Nomin.)"))
+ (Sequel nil))
+
+((Title "The Godfather")
+ (Subtitle "")
+ (Year 1972)
+ (Color t)
+ (Actor
+  (("Don Vito Corleone" "Marlon Brando")
+   ("Michael Corleone" "Al Pacino")))
+ (Oscars
+  ("Best Picture"
+   "Best Actor"))
+ (Sequel nil))
+
+((Title "Inception")
+ (Subtitle "")
+ (Year 2010)
+ (Color t)
+ (Actor
+  (("Cobb" "Leonardo DiCaprio")
+   ("Arthur" "Joseph Gordon-Levitt")))
+ (Oscars
+  ("Best Cinematography"
+   "Best Sound Mixing"))
+ (Sequel nil))
